@@ -1,0 +1,6 @@
+spring:
+    application:
+        name: example-log
+log:
+    enable: true
+    pointcut: execution(public * com.yyw..controller..*.*(..))
