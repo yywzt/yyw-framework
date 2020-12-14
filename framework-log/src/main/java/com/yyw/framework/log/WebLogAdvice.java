@@ -3,16 +3,18 @@ package com.yyw.framework.log;
 
 import com.bying.commons.exception.BusinessException;
 import com.bying.commons.util.ServletUtil;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.AfterReturningAdvice;
+import org.springframework.aop.MethodBeforeAdvice;
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -23,45 +25,36 @@ import java.util.Map;
  * @author yanzhitao@xiaomalixing.com
  * @date 2020/12/10 19:36
  */
-public class WebLogAdvice implements MethodInterceptor {
+public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, ThrowsAdvice {
 
     private final Logger logger = LoggerFactory.getLogger(WebLogAdvice.class);
 
     public static final String UUID = "uuid";
     public static final String RESULT_CODE = "resultCode";
     public static final String RESULT_MESSAGE = "resultMessage";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String APPLICATION_JSON_CHARSET_UTF_8 = "application/json;charset=UTF-8";
 
-    ThreadLocal<Long> startTime = new ThreadLocal<>();
-    ThreadLocal<String> timeTag = new ThreadLocal<>();
+    protected ThreadLocal<Long> startTime = new ThreadLocal<>();
+    protected ThreadLocal<String> timeTag = new ThreadLocal<>();
 
     @Override
-    public Object invoke(MethodInvocation invocation) {
-        doBefore();
-        Object result = null;
-        try {
-            result = invocation.proceed();
-            doAfterReturning(invocation, result);
-        } catch (Throwable throwable) {
-            doAfterThrowing(invocation, throwable);
-        }
-        return result;
-    }
-
-    private void doBefore() {
+    public void before(Method method, Object[] args, Object target) {
         /* 记录启动前时间 */
         startTime.set(System.currentTimeMillis());
         timeTag.set(java.util.UUID.randomUUID() + "");
     }
 
-    private void doAfterReturning(MethodInvocation invocation, Object result) {
-        logRequestInfo(invocation, null != result ? result.toString() : "");
+    @Override
+    public void afterReturning(Object returnValue, Method method, Object[] args, Object target) {
+        logRequestInfo(target, method, null != returnValue ? returnValue.toString() : "");
     }
 
-    private void doAfterThrowing(MethodInvocation invocation, Throwable throwable) {
-        logRequestInfo(invocation, buildReturnValueOfException(throwable));
+    public void afterThrowing(Method method, Object[] args, Object target, Exception ex) {
+        logRequestInfo(target, method, buildReturnValueOfException(ex));
     }
 
-    private void logRequestInfo(MethodInvocation invocation, String returnValue) {
+    private void logRequestInfo(Object target, Method method, String returnValue) {
         HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
         String uuid = "";
         if (request.getParameter(UUID) != null) {
@@ -74,9 +67,9 @@ public class WebLogAdvice implements MethodInterceptor {
                 .append(" ------------------------------\n")
                 .append("RemoteAddr  : ").append(ServletUtil.getIpAddr(request)).append("\n")
                 .append("reqMethod   : ").append(request.getMethod()).append("\n").append("Controller  : ")
-                .append(invocation.getThis().getClass().getName()).append(".(")
-                .append(invocation.getThis().getClass().getSimpleName()).append(".java )").append("\n")
-                .append("Method      : ").append(invocation.getMethod().getName()).append("\n");
+                .append(target.getClass().getName()).append(".(")
+                .append(target.getClass().getSimpleName()).append(".java )").append("\n")
+                .append("Method      : ").append(method.getName()).append("\n");
         String uri = request.getRequestURI();
         if (uri != null) {
             sb.append("url         : ").append(uri).append("\n");
@@ -85,7 +78,7 @@ public class WebLogAdvice implements MethodInterceptor {
         String header = request.getHeader("Content-Type");
         if (null != request.getQueryString()) {
             sb.append(request.getQueryString().replace("&", "   "));
-        } else if ("application/json".equals(header) || "application/json;charset=UTF-8".equals(header)) {
+        } else if (APPLICATION_JSON.equals(header) || APPLICATION_JSON_CHARSET_UTF_8.equals(header)) {
             sb.append(getRequestPayload(request));
         } else {
             sb.append(buildParameterString(request));
@@ -97,18 +90,18 @@ public class WebLogAdvice implements MethodInterceptor {
         logger.info("{}", sb);
     }
 
-    private String buildReturnValueOfException(Throwable throwable) {
-        if (null == throwable) {
+    private String buildReturnValueOfException(Exception ex) {
+        if (null == ex) {
             return "";
         }
         Map<String, Object> result = new HashMap<>(2);
-        if (throwable instanceof BusinessException) {
-            result.put(RESULT_CODE, ((BusinessException) throwable).getCode());
-            result.put(RESULT_MESSAGE, throwable.getMessage());
+        if (ex instanceof BusinessException) {
+            result.put(RESULT_CODE, ((BusinessException) ex).getCode());
+            result.put(RESULT_MESSAGE, ex.getMessage());
             return result.toString();
         }
         result.put(RESULT_CODE, -1);
-        result.put(RESULT_MESSAGE, "errorMessage:" + throwable.getMessage() + "");
+        result.put(RESULT_MESSAGE, "errorMessage:" + ex.getMessage() + "");
         return result.toString();
     }
 
@@ -143,4 +136,5 @@ public class WebLogAdvice implements MethodInterceptor {
         }
         return sb.toString();
     }
+
 }
