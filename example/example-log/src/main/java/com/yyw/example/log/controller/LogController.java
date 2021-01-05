@@ -1,5 +1,7 @@
 package com.yyw.example.log.controller;
 
+import com.yyw.example.log.dto.LogDTO;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,5 +16,10 @@ public class LogController {
     @RequestMapping("/index")
     public Object index() {
         return 123;
+    }
+
+    @RequestMapping("/json")
+    public Object json(@RequestBody LogDTO logDTO) {
+        return logDTO;
     }
 }
