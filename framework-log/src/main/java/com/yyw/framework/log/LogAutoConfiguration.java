@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,8 +37,12 @@ public class LogAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(prefix = "log", name = "enable", havingValue = "true")
-    public RequestWrapperFilter requestWrapperFilter() {
-        return new RequestWrapperFilter();
+    public FilterRegistrationBean<RequestWrapperFilter> filterRegistrationAuthBean() {
+        FilterRegistrationBean<RequestWrapperFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new RequestWrapperFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("requestWrapperFilter");
+        registration.setOrder(1);
+        return registration;
     }
-
 }

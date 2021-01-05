@@ -3,6 +3,8 @@ package com.yyw.framework.log;
 
 import com.bying.commons.exception.BusinessException;
 import com.bying.commons.util.ServletUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.AfterReturningAdvice;
@@ -10,9 +12,10 @@ import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.aop.ThrowsAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -20,6 +23,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author yanzhitao@xiaomalixing.com
@@ -56,10 +60,7 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
 
     private void logRequestInfo(Object target, Method method, String returnValue) {
         HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
-        String uuid = "";
-        if (request.getParameter(UUID) != null) {
-            uuid = request.getParameter(UUID);
-        }
+        String uuid = Optional.ofNullable(request.getParameter(UUID)).orElse(StringUtils.EMPTY);
         StringBuilder sb = new StringBuilder("\nSpringBoot action report ------------------------------------------------------")
                 .append(uuid)
                 .append("----------")
@@ -74,16 +75,9 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
         if (uri != null) {
             sb.append("url         : ").append(uri).append("\n");
         }
-        sb.append("Parameter   : ");
-        String header = request.getHeader("Content-Type");
-        if (null != request.getQueryString()) {
-            sb.append(request.getQueryString().replace("&", "   "));
-        } else if (APPLICATION_JSON.equals(header) || APPLICATION_JSON_CHARSET_UTF_8.equals(header)) {
-            sb.append(getRequestPayload(request));
-        } else {
-            sb.append(buildParameterString(request));
-        }
-        sb.append("\n");
+        sb.append("query       : ").append(request.getQueryString()).append("\n");
+        sb.append("Parameter   : ").append(buildParameterString(request)).append("\n");;
+        sb.append("body        : ").append(getRequestPayload(request)).append("\n");;
         sb.append("return value: ").append(returnValue).append("\n");
         sb.append("times(ms)   : ").append((System.currentTimeMillis() - startTime.get())).append("ms").append("\n");
         sb.append("--------------------------------------------------------------------------------\n");
@@ -117,24 +111,18 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
                 String[] values = request.getParameterValues(name);
                 sb.append(name).append("=").append(String.join(",", values)).append("  ");
             }
-            sb.append("\n");
         }
         return sb.toString();
     }
 
-    private String getRequestPayload(HttpServletRequest req) {
-        StringBuilder sb = new StringBuilder();
+    private String getRequestPayload(HttpServletRequest request) {
+        ContentCachingRequestWrapper wrapper =  WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
         try {
-            BufferedReader reader = req.getReader();
-            char[] buff = new char[1024];
-            int len;
-            while ((len = reader.read(buff)) != -1) {
-                sb.append(buff, 0, len);
-            }
+            return IOUtils.toString(wrapper.getContentAsByteArray(), wrapper.getCharacterEncoding());
         } catch (IOException e) {
-            logger.error("getRequestPayload error", e);
+            logger.error("getRequestPayload error ", e);
         }
-        return sb.toString();
+        return StringUtils.EMPTY;
     }
 
 }

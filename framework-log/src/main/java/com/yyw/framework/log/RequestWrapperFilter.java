@@ -1,44 +1,61 @@
 package com.yyw.framework.log;
 
-import javax.servlet.Filter;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
+import org.springframework.web.util.WebUtils;
+
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * @author yzt
  */
-public class RequestWrapperFilter implements Filter {
+public class RequestWrapperFilter extends OncePerRequestFilter {
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        ServletRequest requestWrapper = null;
-        if (servletRequest instanceof HttpServletRequest) {
-            HttpServletRequest request = (HttpServletRequest) servletRequest;
-            String header = request.getHeader("Content-Type");
-            if ("application/json".equals(header) || "application/json;charset=UTF-8".equals(header)) {
-                requestWrapper = new RequestWrapper((HttpServletRequest) servletRequest);
-            }
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+        if (!isRequestValid(httpServletRequest)) {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
         }
-        //获取request请求中的流，将取出来的字符串保存在缓存中，同时再将该字符串再次转换成流，然后把它放入到新request对象中。
-        if (requestWrapper == null) {
-            filterChain.doFilter(servletRequest, servletResponse);
-        } else {
-            filterChain.doFilter(requestWrapper, servletResponse);
+        if (!(httpServletRequest instanceof ContentCachingRequestWrapper)) {
+            httpServletRequest = new ContentCachingRequestWrapper(httpServletRequest);
+        }
+        if (!(httpServletResponse instanceof ContentCachingResponseWrapper)) {
+            httpServletResponse = new ContentCachingResponseWrapper(httpServletResponse);
+        }
+        try {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+        } finally {
+            copyBodyToResponse(httpServletResponse);
         }
     }
 
-    @Override
-    public void init(FilterConfig filterConfig) {
-        //
+    private boolean isRequestValid(HttpServletRequest request) {
+        try {
+            new URI(request.getRequestURL().toString());
+            return true;
+        } catch (URISyntaxException ex) {
+            return false;
+        }
     }
 
-    @Override
-    public void destroy() {
-        //
+    /**
+     * 防止 读取response body的数据后，导致无法返回数据
+     *
+     * @param response
+     * @throws IOException
+     */
+    private void copyBodyToResponse(HttpServletResponse response) throws IOException {
+        ContentCachingResponseWrapper responseWrapper = WebUtils.getNativeResponse(response, ContentCachingResponseWrapper.class);
+        Objects.requireNonNull(responseWrapper).copyBodyToResponse();
     }
+
 }
