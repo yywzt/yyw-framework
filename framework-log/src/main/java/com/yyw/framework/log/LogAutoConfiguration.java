@@ -1,12 +1,12 @@
 package com.yyw.framework.log;
 
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,8 +20,14 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(LogProperties.class)
 public class LogAutoConfiguration {
 
-    @Autowired
-    private LogProperties logProperties;
+    public static ApplicationContext APPLICATION_CONTEXT;
+
+    private final LogProperties logProperties;
+
+    public LogAutoConfiguration(ApplicationContext applicationContext, LogProperties logProperties) {
+        APPLICATION_CONTEXT = applicationContext;
+        this.logProperties = logProperties;
+    }
 
     @Bean
     @ConditionalOnProperty(prefix = "log", name = "enable", havingValue = "true")

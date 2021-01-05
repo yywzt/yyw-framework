@@ -3,6 +3,8 @@ package com.yyw.framework.log;
 
 import com.bying.commons.exception.BusinessException;
 import com.bying.commons.util.ServletUtil;
+import com.yyw.framework.log.dto.RequestLogDTO;
+import com.yyw.framework.log.event.WebLogEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -59,29 +61,60 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
     }
 
     private void logRequestInfo(Object target, Method method, String returnValue) {
-        HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
         String uuid = Optional.ofNullable(request.getParameter(UUID)).orElse(StringUtils.EMPTY);
+        String requestMethod = request.getMethod();
+        String methodName = method.getName();
+        String classRemoteName = target.getClass().getName();
+        String classSimpleName = target.getClass().getSimpleName();
+        String ipAddr = ServletUtil.getIpAddr(request);
         StringBuilder sb = new StringBuilder("\nSpringBoot action report ------------------------------------------------------")
                 .append(uuid)
                 .append("----------")
                 .append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()))
                 .append(" ------------------------------\n")
-                .append("RemoteAddr  : ").append(ServletUtil.getIpAddr(request)).append("\n")
-                .append("reqMethod   : ").append(request.getMethod()).append("\n").append("Controller  : ")
-                .append(target.getClass().getName()).append(".(")
-                .append(target.getClass().getSimpleName()).append(".java )").append("\n")
-                .append("Method      : ").append(method.getName()).append("\n");
+                .append("RemoteAddr  : ").append(ipAddr).append("\n")
+                .append("reqMethod   : ").append(requestMethod).append("\n").append("Controller  : ")
+                .append(classRemoteName).append(".(")
+                .append(classSimpleName).append(".java )").append("\n")
+                .append("Method      : ").append(methodName).append("\n");
         String uri = request.getRequestURI();
         if (uri != null) {
             sb.append("url         : ").append(uri).append("\n");
         }
-        sb.append("query       : ").append(request.getQueryString()).append("\n");
-        sb.append("Parameter   : ").append(buildParameterString(request)).append("\n");;
-        sb.append("body        : ").append(getRequestPayload(request)).append("\n");;
+        String queryString = request.getQueryString();
+        String parameter = buildParameterString(request);
+        String body = getRequestPayload(request);
+        sb.append("query       : ").append(queryString).append("\n");
+        sb.append("Parameter   : ").append(parameter).append("\n");
+        sb.append("body        : ").append(body).append("\n");
         sb.append("return value: ").append(returnValue).append("\n");
-        sb.append("times(ms)   : ").append((System.currentTimeMillis() - startTime.get())).append("ms").append("\n");
+        long time = System.currentTimeMillis() - startTime.get();
+        sb.append("times(ms)   : ").append(time).append("ms").append("\n");
         sb.append("--------------------------------------------------------------------------------\n");
         logger.info("{}", sb);
+        int status = attributes.getResponse().getStatus();
+        RequestLogDTO roadBookRequestLogDTO = createRoadBookRequestLogDTO(uri, requestMethod, methodName, classRemoteName
+                , queryString, parameter, body, returnValue, status, ipAddr, time);
+        LogAutoConfiguration.APPLICATION_CONTEXT.publishEvent(new WebLogEvent(this, roadBookRequestLogDTO));
+    }
+
+    public RequestLogDTO createRoadBookRequestLogDTO(String uri, String requestMethod, String methodName, String classRemoteName
+            , String queryString, String parameter, String body, String returnValue, Integer status, String ipAddr, long time) {
+        Date date = new Date();
+        RequestLogDTO requestLogDTO = new RequestLogDTO();
+        requestLogDTO.setCreateDate(date);
+        requestLogDTO.setUrl(uri);
+        requestLogDTO.setRequestMethod(requestMethod);
+        requestLogDTO.setMethodName(methodName);
+        requestLogDTO.setClassName(classRemoteName);
+        requestLogDTO.setParameter(parameter);
+        requestLogDTO.setResponse(returnValue);
+        requestLogDTO.setStatus(status);
+        requestLogDTO.setIp(ipAddr);
+        requestLogDTO.setTime(time);
+        return requestLogDTO;
     }
 
     private String buildReturnValueOfException(Exception ex) {
@@ -116,7 +149,7 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
     }
 
     private String getRequestPayload(HttpServletRequest request) {
-        ContentCachingRequestWrapper wrapper =  WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
+        ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
         try {
             return IOUtils.toString(wrapper.getContentAsByteArray(), wrapper.getCharacterEncoding());
         } catch (IOException e) {
