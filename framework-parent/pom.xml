@@ -14,6 +14,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
         <spring-cloud-dependencies.version>Hoxton.SR8</spring-cloud-dependencies.version>
+        <javax.persistence-api.version>2.2</javax.persistence-api.version>
+        <lombok.version>1.18.16</lombok.version>
     </properties>
 
     <dependencyManagement>
@@ -52,6 +54,18 @@
                         <artifactId>spring-boot-starter-tomcat</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.persistence</groupId>
+                <artifactId>javax.persistence-api</artifactId>
+                <version>${javax.persistence-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
