@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.yyw</groupId>
     <artifactId>framework-log</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>framework-log</name>
@@ -20,6 +19,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.yyw</groupId>
+            <artifactId>framework-api</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.yyw</groupId>
+            <artifactId>framework-util</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
@@ -30,29 +39,14 @@
         </dependency>
 
         <dependency>
-            <groupId>com.xiaomalixing.www</groupId>
-            <artifactId>bying-commons</artifactId>
-            <version>${bying-commons}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.poi</groupId>
-                    <artifactId>poi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.poi</groupId>
-                    <artifactId>poi-ooxml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.poi</groupId>
-                    <artifactId>poi-ooxml-schemas</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
         <dependency>

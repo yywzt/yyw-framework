@@ -20,18 +20,26 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(LogProperties.class)
 public class LogAutoConfiguration {
 
-    public static ApplicationContext APPLICATION_CONTEXT;
+    private static ApplicationContext applicationContext;
 
     private final LogProperties logProperties;
 
     public LogAutoConfiguration(ApplicationContext applicationContext, LogProperties logProperties) {
-        APPLICATION_CONTEXT = applicationContext;
+        LogAutoConfiguration.setApplicationContext(applicationContext);
         this.logProperties = logProperties;
+    }
+
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    public static void setApplicationContext(ApplicationContext applicationContext) {
+        LogAutoConfiguration.applicationContext = applicationContext;
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "log", name = "enable", havingValue = "true")
-    public AspectJExpressionPointcutAdvisor configurabledvisor() {
+    public AspectJExpressionPointcutAdvisor configurableAdvisor() {
         AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
         advisor.setExpression(logProperties.getPointcut());
         advisor.setAdvice(new WebLogAdvice());
@@ -48,7 +56,7 @@ public class LogAutoConfiguration {
         registration.setFilter(new RequestWrapperFilter());
         registration.addUrlPatterns("/*");
         registration.setName("requestWrapperFilter");
-        registration.setOrder(1);
+        registration.setOrder(Integer.MIN_VALUE);
         return registration;
     }
 }

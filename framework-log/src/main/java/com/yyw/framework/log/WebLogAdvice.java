@@ -1,12 +1,11 @@
 package com.yyw.framework.log;
 
 
-import com.bying.commons.exception.BusinessException;
-import com.bying.commons.util.ServletUtil;
+import com.yyw.api.exception.BusinessException;
 import com.yyw.framework.log.dto.RequestLogDTO;
 import com.yyw.framework.log.event.WebLogEvent;
+import com.yyw.framework.util.ServletUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.AfterReturningAdvice;
@@ -33,6 +32,7 @@ import java.util.Optional;
  */
 public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, ThrowsAdvice {
 
+    public static final String EMPTY_STRING = "";
     private final Logger logger = LoggerFactory.getLogger(WebLogAdvice.class);
 
     public static final String UUID = "uuid";
@@ -63,7 +63,7 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
     private void logRequestInfo(Object target, Method method, String returnValue) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
-        String uuid = Optional.ofNullable(request.getParameter(UUID)).orElse(StringUtils.EMPTY);
+        String uuid = Optional.ofNullable(request.getParameter(UUID)).orElse(EMPTY_STRING);
         String requestMethod = request.getMethod();
         String methodName = method.getName();
         String classRemoteName = target.getClass().getName();
@@ -97,7 +97,7 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
         int status = attributes.getResponse().getStatus();
         RequestLogDTO roadBookRequestLogDTO = createRoadBookRequestLogDTO(uri, requestMethod, methodName, classRemoteName
                 , queryString, parameter, body, returnValue, status, ipAddr, time);
-        LogAutoConfiguration.APPLICATION_CONTEXT.publishEvent(new WebLogEvent(this, roadBookRequestLogDTO));
+        LogAutoConfiguration.getApplicationContext().publishEvent(new WebLogEvent(this, roadBookRequestLogDTO));
     }
 
     public RequestLogDTO createRoadBookRequestLogDTO(String uri, String requestMethod, String methodName, String classRemoteName
@@ -155,7 +155,7 @@ public class WebLogAdvice implements MethodBeforeAdvice, AfterReturningAdvice, T
         } catch (IOException e) {
             logger.error("getRequestPayload error ", e);
         }
-        return StringUtils.EMPTY;
+        return EMPTY_STRING;
     }
 
 }
