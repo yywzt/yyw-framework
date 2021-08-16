@@ -16,6 +16,11 @@
         <spring-cloud-dependencies.version>Hoxton.SR8</spring-cloud-dependencies.version>
         <javax.persistence-api.version>2.2</javax.persistence-api.version>
         <lombok.version>1.18.16</lombok.version>
+        <platform-bom.version>Cairo-RELEASE</platform-bom.version>
+        <framework-exception.version>0.0.1-SNAPSHOT</framework-exception.version>
+        <framework-log.version>0.0.1-SNAPSHOT</framework-log.version>
+        <framework-api.version>0.0.1-SNAPSHOT</framework-api.version>
+        <framework-util.version>0.0.1-SNAPSHOT</framework-util.version>
     </properties>
 
     <dependencyManagement>
@@ -39,7 +44,7 @@
             <dependency>
                 <groupId>io.spring.platform</groupId>
                 <artifactId>platform-bom</artifactId>
-                <version>Cairo-RELEASE</version>
+                <version>${platform-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -66,6 +71,30 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.yyw</groupId>
+                <artifactId>framework-api</artifactId>
+                <version>${framework-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.yyw</groupId>
+                <artifactId>framework-log</artifactId>
+                <version>${framework-log.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.yyw</groupId>
+                <artifactId>framework-exception</artifactId>
+                <version>${framework-exception.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.yyw</groupId>
+                <artifactId>framework-util</artifactId>
+                <version>${framework-util.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
