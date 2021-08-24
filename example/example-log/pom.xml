@@ -17,8 +17,17 @@
     <dependencies>
         <dependency>
             <groupId>com.yyw</groupId>
+            <artifactId>framework-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yyw</groupId>
             <artifactId>framework-log</artifactId>
-            <version>${framework-log-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yyw</groupId>
+            <artifactId>framework-exception</artifactId>
         </dependency>
     </dependencies>
 
