@@ -1,5 +1,7 @@
 package com.yyw.example.log.controller;
 
+import com.yyw.api.exception.BusinessException;
+import com.yyw.api.model.ResponseData;
 import com.yyw.example.log.dto.LogDTO;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,5 +23,10 @@ public class LogController {
     @RequestMapping("/json")
     public Object json(@RequestBody LogDTO logDTO) {
         return logDTO;
+    }
+
+    @RequestMapping("/exception")
+    public ResponseData<Object> exception() throws BusinessException {
+        throw new BusinessException("123123123","error");
     }
 }
