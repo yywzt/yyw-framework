@@ -37,6 +37,10 @@ public class ResponseData<T> {
         this.data = data;
     }
 
+    public static <T> ResponseData<Object> success(T data) {
+        return new ResponseData<>(ResponseCode.SUCCESS, data);
+    }
+
     public static ResponseData<Object> success(String code, String message) {
         return new ResponseData<>(code, message);
     }
