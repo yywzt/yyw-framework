@@ -1,7 +1,10 @@
 package com.yyw.api.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,6 +12,8 @@ import java.util.List;
  * @date 2021/3/16 16:55
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PageInfoVO<T> {
 
     /**
@@ -31,5 +36,9 @@ public class PageInfoVO<T> {
      * 当前页的数据
      */
     private List<T> list;
+
+    public static <T> PageInfoVO<T> empty(int pageNum, int pageSize) {
+        return new PageInfoVO<>(pageSize, 0, 0, pageNum, new ArrayList<>());
+    }
 
 }
