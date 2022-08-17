@@ -2,7 +2,6 @@ package com.yyw.api.vo;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,17 +9,16 @@ import java.util.List;
  * @date 2021/3/16 16:55
  */
 @Data
-public class PageInfoVO<T> implements Serializable {
+public class PageInfoVO<T> {
 
-    private static final long serialVersionUID = 1L;
     /**
      * 默认展示10条记录
      */
-    private Integer pagesize;
+    private Integer pageSize;
     /**
      * 总记录数
      */
-    private Integer total;
+    private Integer totals;
     /**
      * 总页数
      */
