@@ -23,12 +23,12 @@ public enum ResponseCode implements AppCode {
     UNKNOWN_WORKER_ID("10102", "无法获取IdWorker标识"),
     INVALID_WORKER_ID("10103", "无效IdWorker标识，%d > %d");
 
-    private String code;
-    private String message;
+    private final String code;
+    private final String message;
 
     ResponseCode(String code, String message) {
-        this.setCode(code);
-        this.setMessage(message);
+        this.code = code;
+        this.message = message;
     }
 
     @Override
@@ -45,18 +45,8 @@ public enum ResponseCode implements AppCode {
     }
 
     @Override
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    @Override
     public String getCode() {
         return this.code;
-    }
-
-    @Override
-    public void setCode(String code) {
-        this.code = code;
     }
 
 }
