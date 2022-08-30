@@ -41,4 +41,8 @@ public class PageInfoVO<T> {
         return new PageInfoVO<>(pageSize, 0, 0, pageNum, new ArrayList<>());
     }
 
+    public <K> PageInfoVO<K> build(List<K> list) {
+        return new PageInfoVO<>(this.pageSize, this.totals, this.totalPages, this.currentPage, list);
+    }
+
 }
