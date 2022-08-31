@@ -7,9 +7,9 @@ package com.yyw.framework.util;
 public class IdWorkerUtil {
 
     /**
-     * 开始时间截 (2015-01-01)
+     * 开始时间截 (2022-08-31 08:00:00)
      */
-    private final long twepoch = 1489111610226L;
+    private final long twepoch = 1661904000000L;
 
     /**
      * 机器id所占的位数
