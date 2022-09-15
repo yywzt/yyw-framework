@@ -37,11 +37,11 @@ public class ResponseData<T> {
         this.data = data;
     }
 
-    public static <T> ResponseData<Object> success(T data) {
+    public static <T> ResponseData<T> success(T data) {
         return new ResponseData<>(ResponseCode.SUCCESS, data);
     }
 
-    public static ResponseData<Object> success(String code, String message) {
+    public static <T> ResponseData<T> success(String code, String message) {
         return new ResponseData<>(code, message);
     }
 
@@ -49,7 +49,7 @@ public class ResponseData<T> {
         return new ResponseData<>(code, message, data);
     }
 
-    public static ResponseData<Object> failure(String code, String message) {
+    public static <T> ResponseData<T> failure(String code, String message) {
         return new ResponseData<>(code, message);
     }
 
@@ -57,7 +57,7 @@ public class ResponseData<T> {
         return new ResponseData<>(code, message, data);
     }
 
-    public static ResponseData<Object> failure(AppCode appCode) {
+    public static <T> ResponseData<T> failure(AppCode appCode) {
         return new ResponseData<>(appCode);
     }
 
